@@ -456,6 +456,100 @@
             letter-spacing: 0.5px;
         }
 
+        /* QUOTATION FORM PAGE */
+        .quote-page-intro {
+            background: var(--coral);
+            padding: 36px 50px 28px;
+            color: white;
+        }
+        .quote-page-title {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        .quote-page-subtitle {
+            font-size: 13px;
+            opacity: 0.88;
+            line-height: 1.65;
+        }
+        .quote-category-header {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            color: var(--coral);
+            padding: 16px 50px 8px;
+            border-bottom: 2px solid var(--coral);
+            margin: 8px 50px 0;
+        }
+        .quote-product-row {
+            display: flex;
+            align-items: center;
+            padding: 11px 50px;
+            border-bottom: 1px solid var(--cream-dark);
+            gap: 14px;
+            transition: background 0.15s;
+        }
+        .quote-product-row:hover { background: var(--cream-mid); }
+        .quote-product-row input[type="checkbox"] {
+            width: 17px; height: 17px;
+            accent-color: var(--coral);
+            cursor: pointer; flex-shrink: 0;
+        }
+        .quote-product-info { flex: 1; }
+        .quote-product-name { font-size: 13px; font-weight: 600; color: var(--dark); }
+        .quote-product-ref { font-size: 11px; color: var(--grey); margin-top: 1px; }
+        .quote-moq-label { font-size: 11px; color: var(--grey); white-space: nowrap; }
+        .quote-qty-wrapper {
+            display: flex; align-items: center; gap: 8px;
+            opacity: 0; pointer-events: none; transition: opacity 0.2s;
+        }
+        .quote-qty-wrapper.active { opacity: 1; pointer-events: all; }
+        .quote-qty-label { font-size: 11px; color: var(--grey); white-space: nowrap; }
+        .quote-qty-input {
+            width: 76px; padding: 5px 10px;
+            border: 1.5px solid var(--cream-dark); border-radius: 4px;
+            font-size: 13px; color: var(--dark); background: white; text-align: center;
+        }
+        .quote-qty-input:focus { outline: none; border-color: var(--coral); }
+        .quote-contact-section {
+            margin: 24px 50px 0;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+        }
+        .quote-contact-section .full-width { grid-column: 1 / -1; }
+        .quote-input {
+            padding: 11px 15px;
+            border: 1.5px solid var(--cream-dark); border-radius: 6px;
+            font-size: 13px; color: var(--dark); background: white;
+            font-family: inherit; transition: border-color 0.2s;
+        }
+        .quote-input:focus { outline: none; border-color: var(--coral); }
+        .quote-input::placeholder { color: var(--grey); }
+        .quote-textarea { resize: vertical; min-height: 72px; }
+        .quote-submit-row {
+            padding: 20px 50px 38px;
+            display: flex; align-items: center;
+            justify-content: space-between; gap: 16px;
+        }
+        .quote-submit-note { font-size: 11px; color: var(--grey); line-height: 1.6; }
+        .quote-submit-btn {
+            background: var(--coral); color: white; border: none;
+            padding: 13px 32px; border-radius: 6px;
+            font-size: 13px; font-weight: 700; letter-spacing: 1px;
+            text-transform: uppercase; cursor: pointer;
+            transition: background 0.2s, transform 0.1s; white-space: nowrap;
+        }
+        .quote-submit-btn:hover { background: var(--coral-dark); }
+        .quote-submit-btn:active { transform: scale(0.98); }
+        .quote-success-msg {
+            display: none; background: #2d7a4f; color: white;
+            padding: 14px 24px; border-radius: 6px;
+            font-size: 13px; font-weight: 600;
+            margin: 0 50px 16px;
+        }
+
         /* PRINT STYLES */
         @media print {
             body {
@@ -489,6 +583,7 @@
             <a href="#viennoiseries">Viennoiseries</a>
             <a href="#soft-range">Soft Range</a>
             <a href="#breads">Breads & Specialties</a>
+            <a href="#get-a-quote" style="background:var(--coral);color:white;padding:4px 14px;border-radius:20px;font-weight:700;">Get a Quote</a>
         </div>
         <div class="nav-right">partner@hayhaybakery.com</div>
     </nav>
@@ -698,6 +793,152 @@
             <div class="contact-info">partner@hayhaybakery.com · hayhaybakery.com</div>
         `;
         orderPage.appendChild(contactBox);
+
+        // ═══ QUOTATION FORM PAGE ════════════════════════════════════════════
+        const quotePage = document.createElement('div');
+        quotePage.className = 'page';
+        quotePage.id = 'get-a-quote';
+        container.appendChild(quotePage);
+
+        // Header
+        const quotePageHeader = document.createElement('div');
+        quotePageHeader.className = 'page-header';
+        quotePageHeader.innerHTML = `<div>HAYHAY B2B · 2026</div><div>Request a Quotation</div>`;
+        quotePage.appendChild(quotePageHeader);
+
+        // Intro banner
+        const quoteIntro = document.createElement('div');
+        quoteIntro.className = 'quote-page-intro';
+        quoteIntro.innerHTML = `
+            <div class="quote-page-title">Request a Quotation</div>
+            <div class="quote-page-subtitle">Select the products and quantities you need — our team will respond within 24 hours with a tailored trade offer.</div>
+        `;
+        quotePage.appendChild(quoteIntro);
+
+        // Product selection grouped by category
+        categories.forEach(cat => {
+            const catProducts = groupedByCategory[cat];
+
+            const catHeader = document.createElement('div');
+            catHeader.className = 'quote-category-header';
+            catHeader.textContent = cat;
+            quotePage.appendChild(catHeader);
+
+            catProducts.forEach(product => {
+                const moqNum = parseInt(product.moq) || 10;
+
+                const row = document.createElement('div');
+                row.className = 'quote-product-row';
+                row.innerHTML = `
+                    <input type="checkbox" id="chk_${product.ref}" class="quote-check"
+                        data-ref="${product.ref}" data-name="${product.name}" data-moq="${moqNum}">
+                    <div class="quote-product-info">
+                        <div class="quote-product-name">${product.name}</div>
+                        <div class="quote-product-ref">${product.ref}</div>
+                    </div>
+                    <div class="quote-moq-label">MOQ: ${product.moq}</div>
+                    <div class="quote-qty-wrapper" id="qty_wrap_${product.ref}">
+                        <span class="quote-qty-label">Qty:</span>
+                        <input type="number" class="quote-qty-input" id="qty_${product.ref}"
+                            min="${moqNum}" step="${moqNum}" value="${moqNum}">
+                    </div>
+                `;
+                quotePage.appendChild(row);
+
+                const checkbox = row.querySelector('.quote-check');
+                const qtyWrap = row.querySelector('.quote-qty-wrapper');
+                checkbox.addEventListener('change', () => {
+                    qtyWrap.classList.toggle('active', checkbox.checked);
+                });
+            });
+        });
+
+        // Contact fields
+        const contactSection = document.createElement('div');
+        contactSection.className = 'quote-contact-section';
+        contactSection.innerHTML = `
+            <input type="email" class="quote-input" id="quote_email" placeholder="Email address *">
+            <input type="tel"   class="quote-input" id="quote_phone" placeholder="Phone number *">
+            <input type="text"  class="quote-input full-width" id="quote_business" placeholder="Business / café name (optional)">
+            <textarea class="quote-input quote-textarea full-width" id="quote_notes"
+                placeholder="Additional notes — delivery schedule, specific requirements, seasonal needs…"></textarea>
+        `;
+        quotePage.appendChild(contactSection);
+
+        // Success message
+        const successMsg = document.createElement('div');
+        successMsg.className = 'quote-success-msg';
+        successMsg.id = 'quote_success';
+        successMsg.innerHTML = `✓ Your quotation request is ready — your email client will open with a pre-filled message to our team.`;
+        quotePage.appendChild(successMsg);
+
+        // Submit row
+        const submitRow = document.createElement('div');
+        submitRow.className = 'quote-submit-row';
+        submitRow.innerHTML = `
+            <div class="quote-submit-note">
+                Trade pricing applies to qualifying businesses only.<br>
+                Our team will respond within 24 hours.
+            </div>
+            <button class="quote-submit-btn" id="quote_submit_btn">Send Quotation Request →</button>
+        `;
+        quotePage.appendChild(submitRow);
+
+        // Submit handler
+        document.getElementById('quote_submit_btn').addEventListener('click', () => {
+            const email    = document.getElementById('quote_email').value.trim();
+            const phone    = document.getElementById('quote_phone').value.trim();
+            const business = document.getElementById('quote_business').value.trim();
+            const notes    = document.getElementById('quote_notes').value.trim();
+
+            if (!email || !phone) {
+                alert('Please fill in your email address and phone number.');
+                return;
+            }
+            if (!email.includes('@')) {
+                alert('Please enter a valid email address.');
+                return;
+            }
+
+            const selected = [];
+            document.querySelectorAll('.quote-check:checked').forEach(chk => {
+                const qty = document.getElementById('qty_' + chk.dataset.ref)?.value || chk.dataset.moq;
+                selected.push(`  • ${chk.dataset.name} (${chk.dataset.ref})  —  Qty: ${qty}`);
+            });
+
+            if (selected.length === 0) {
+                alert('Please select at least one product.');
+                return;
+            }
+
+            const lines = [
+                'HAYHAY B2B — QUOTATION REQUEST',
+                '================================',
+                '',
+                'CONTACT DETAILS',
+                `Email:    ${email}`,
+                `Phone:    ${phone}`,
+                business ? `Business: ${business}` : null,
+                '',
+                'SELECTED PRODUCTS',
+                ...selected,
+                '',
+                notes ? `NOTES\n${notes}\n` : null,
+                '--------------------------------',
+                'Sent via Hayhay B2B Catalogue 2026',
+            ].filter(l => l !== null);
+
+            const subject = `Quotation Request — ${business || email}`;
+            const body    = lines.join('\n');
+            window.location.href = `mailto:partner@hayhaybakery.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+            const successEl = document.getElementById('quote_success');
+            successEl.style.display = 'block';
+            successEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            const btn = document.getElementById('quote_submit_btn');
+            btn.textContent = '✓ Request Sent';
+            btn.style.background = '#2d7a4f';
+        });
     </script>
 </body>
 </html>
