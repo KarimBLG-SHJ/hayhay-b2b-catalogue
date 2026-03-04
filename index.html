@@ -884,13 +884,6 @@
         `;
         quotePage.appendChild(submitRow);
 
-        // ── Formspree config ─────────────────────────────────────────────────
-        // 1. Create a FREE account at https://formspree.io
-        // 2. Create a new form → set recipient to partner@hayhaybakery.com
-        // 3. Copy your 8-char Form ID and paste it below (e.g. "xpwzgdnq")
-        const FORMSPREE_ID = 'YOUR_FORMSPREE_ID';
-        // ─────────────────────────────────────────────────────────────────────
-
         document.getElementById('quote_submit_btn').addEventListener('click', async () => {
             const email    = document.getElementById('quote_email').value.trim();
             const phone    = document.getElementById('quote_phone').value.trim();
@@ -898,90 +891,42 @@
             const notes    = document.getElementById('quote_notes').value.trim();
             const btn      = document.getElementById('quote_submit_btn');
 
-            // Validate
-            if (!email || !phone) {
-                alert('Please fill in your email address and phone number.');
-                return;
-            }
-            if (!email.includes('@')) {
-                alert('Please enter a valid email address.');
-                return;
-            }
+            if (!email || !phone) { alert('Please fill in your email address and phone number.'); return; }
+            if (!email.includes('@')) { alert('Please enter a valid email address.'); return; }
 
             const selected = [];
             document.querySelectorAll('.quote-check:checked').forEach(chk => {
                 const qty = document.getElementById('qty_' + chk.dataset.ref)?.value || chk.dataset.moq;
                 selected.push(`${chk.dataset.name} (${chk.dataset.ref}) — Qty: ${qty}`);
             });
-            if (selected.length === 0) {
-                alert('Please select at least one product.');
-                return;
-            }
+            if (selected.length === 0) { alert('Please select at least one product.'); return; }
 
-            // Loading state
             btn.textContent = 'Sending…';
             btn.disabled = true;
             btn.style.opacity = '0.75';
 
-            const payload = {
-                _subject:  `Quotation Request — ${business || email}`,
-                _replyto:  email,
-                email:     email,
-                phone:     phone,
-                business:  business || '—',
-                products:  selected.join('\n'),
-                notes:     notes || '—',
-            };
-
             try {
-                const endpoint = FORMSPREE_ID === 'YOUR_FORMSPREE_ID'
-                    ? null
-                    : `https://formspree.io/f/${FORMSPREE_ID}`;
-
-                if (!endpoint) {
-                    // Fallback: open mailto if Formspree not yet configured
-                    const body = [
-                        'CONTACT',
-                        `Email: ${email}`, `Phone: ${phone}`,
-                        business ? `Business: ${business}` : '',
-                        '', 'PRODUCTS', ...selected,
-                        notes ? `\nNOTES\n${notes}` : '',
-                    ].filter(Boolean).join('\n');
-                    window.open(`mailto:partner@hayhaybakery.com?subject=${encodeURIComponent(payload._subject)}&body=${encodeURIComponent(body)}`);
-                    showSuccess(btn);
-                    return;
-                }
-
-                const res = await fetch(endpoint, {
+                const res = await fetch('/api/send-quote', {
                     method:  'POST',
-                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                    body:    JSON.stringify(payload),
+                    headers: { 'Content-Type': 'application/json' },
+                    body:    JSON.stringify({ email, phone, business, products: selected.join('\n'), notes }),
                 });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data?.error || 'Error');
 
-                if (res.ok) {
-                    showSuccess(btn);
-                } else {
-                    const data = await res.json();
-                    throw new Error(data?.error || 'Submission failed');
-                }
+                const successEl = document.getElementById('quote_success');
+                successEl.innerHTML = '✓ Your quotation request has been sent — our team will reply within 24 hours.';
+                successEl.style.display = 'block';
+                successEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                btn.textContent = '✓ Request Sent';
+                btn.style.background = '#2d7a4f';
             } catch (err) {
                 btn.textContent = 'Send Quotation Request →';
                 btn.disabled = false;
                 btn.style.opacity = '1';
-                alert('Could not send the form. Please email us directly at partner@hayhaybakery.com');
-                console.error(err);
+                alert('Something went wrong. Please try again or email partner@hayhaybakery.com directly.');
             }
         });
-
-        function showSuccess(btn) {
-            const successEl = document.getElementById('quote_success');
-            successEl.innerHTML = '✓ Your quotation request has been sent — our team will reply within 24 hours.';
-            successEl.style.display = 'block';
-            successEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            btn.textContent = '✓ Request Sent';
-            btn.style.background = '#2d7a4f';
-            btn.disabled = true;
-        }
     </script>
 </body>
 </html>
